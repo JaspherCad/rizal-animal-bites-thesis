@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+pandas
+numpy
+neuralprophet
+xgboost
+python-multipart
+reportlab
+matplotlib

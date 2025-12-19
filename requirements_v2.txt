@@ -1,0 +1,136 @@
+# ============================================================================
+# RABIES FORECASTING - COMPATIBLE REQUIREMENTS (Python 3.9)
+# ============================================================================
+# Created: 2025-12-07
+# Purpose: Clean installation with resolved numpy/pmdarima/tbats compatibility
+# Usage: pip install -r requirements_v2.txt
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# CORE NUMERICAL & DATA PROCESSING (Install FIRST - Critical Dependencies)
+# ----------------------------------------------------------------------------
+numpy>=1.21.0,<1.27.0          # Compatible with pmdarima pre-compiled binaries
+pandas>=2.0.0,<2.4.0           # Data manipulation
+scipy>=1.10.0,<1.14.0          # Scientific computing
+
+# ----------------------------------------------------------------------------
+# STATISTICAL & TIME SERIES PACKAGES
+# ----------------------------------------------------------------------------
+statsmodels>=0.14.0,<0.15.0    # SARIMA, ARIMA, ETS, Theta models
+pmdarima>=2.0.0,<2.1.0         # Auto-ARIMA functionality
+tbats>=1.1.0,<1.2.0            # TBATS model (complex seasonality)
+sktime>=0.38.0,<0.39.0         # Time series metrics (MASE)
+scikit-hts>=0.5.0,<0.6.0       # Hierarchical time series reconciliation
+
+# ----------------------------------------------------------------------------
+# DEEP LEARNING TIME SERIES FORECASTING
+# ----------------------------------------------------------------------------
+prophet>=1.1.0,<1.2.0          # Facebook Prophet
+neuralprophet>=0.9.0,<1.0.0    # Neural Prophet (requires torch)
+torch>=2.0.0,<2.5.0            # PyTorch backend for NeuralProphet
+pytorch-lightning>=2.0.0,<2.6.0 # Lightning framework
+
+# ----------------------------------------------------------------------------
+# MACHINE LEARNING MODELS & TOOLS
+# ----------------------------------------------------------------------------
+xgboost>=2.1.0,<2.2.0          # XGBoost for residual modeling
+lightgbm>=4.0.0,<4.7.0         # LightGBM alternative
+scikit-learn>=1.5.0,<1.7.0     # ML utilities, preprocessing, metrics
+
+# ----------------------------------------------------------------------------
+# DEEP LEARNING (TensorFlow/Keras for LSTM)
+# ----------------------------------------------------------------------------
+tensorflow>=2.15.0,<2.21.0     # TensorFlow for LSTM models
+keras>=3.0.0,<3.11.0           # Keras API
+
+# ----------------------------------------------------------------------------
+# DATA VISUALIZATION
+# ----------------------------------------------------------------------------
+matplotlib>=3.7.0,<3.10.0      # Core plotting
+seaborn>=0.13.0,<0.14.0        # Statistical visualizations
+plotly>=5.0.0,<6.3.0           # Interactive plots
+kaleido>=0.2.0,<0.3.0          # Static plotly image export
+
+# ----------------------------------------------------------------------------
+# JUPYTER NOTEBOOK ENVIRONMENT
+# ----------------------------------------------------------------------------
+jupyter>=1.0.0
+jupyterlab>=4.0.0,<4.5.0
+ipykernel>=6.25.0,<6.30.0
+ipython>=8.10.0,<8.19.0
+ipywidgets>=8.0.0,<8.2.0
+notebook>=7.0.0,<7.5.0
+
+# ----------------------------------------------------------------------------
+# UTILITY PACKAGES
+# ----------------------------------------------------------------------------
+joblib>=1.3.0,<1.6.0           # Model serialization
+cloudpickle>=3.0.0,<3.2.0      # Enhanced pickling
+python-dateutil>=2.8.0,<2.10.0 # Date utilities
+pytz>=2022.0,<2026.0           # Timezone handling
+tqdm>=4.65.0,<4.68.0           # Progress bars
+colorama>=0.4.6,<0.5.0         # Colored terminal output
+
+# ----------------------------------------------------------------------------
+# PROPHET DEPENDENCIES (Holiday/Calendar Support)
+# ----------------------------------------------------------------------------
+holidays>=0.40,<0.77           # Holiday calendar
+convertdate>=2.4.0,<2.5.0      # Calendar conversion
+LunarCalendar>=0.0.9,<0.1.0    # Lunar calendar
+pystan>=2.19.0,<3.0.0          # Stan backend for Prophet
+cmdstanpy>=1.0.0,<1.3.0        # CmdStan interface
+
+# ----------------------------------------------------------------------------
+# OPTUNA (Hyperparameter Optimization)
+# ----------------------------------------------------------------------------
+optuna>=3.0.0,<4.6.0           # Hyperparameter tuning framework
+
+# ----------------------------------------------------------------------------
+# ADDITIONAL ML UTILITIES
+# ----------------------------------------------------------------------------
+captum>=0.8.0,<0.9.0           # Model interpretability
+torchmetrics>=1.0.0,<1.8.0     # Metrics for PyTorch
+lightning-utilities>=0.10.0,<0.15.0  # Lightning helpers
+
+# ----------------------------------------------------------------------------
+# SYSTEM & MONITORING
+# ----------------------------------------------------------------------------
+psutil>=5.9.0,<8.0.0           # System monitoring
+tensorboard>=2.15.0,<2.21.0    # TensorBoard logging
+
+# ============================================================================
+# INSTALLATION INSTRUCTIONS
+# ============================================================================
+# 
+# 1. CREATE VIRTUAL ENVIRONMENT (Recommended):
+#    python -m venv prophetneural
+#    .\prophetneural\Scripts\activate  (Windows)
+#    source prophetneural/bin/activate (Mac/Linux)
+#
+# 2. UPGRADE PIP:
+#    python -m pip install --upgrade pip
+#
+# 3. INSTALL REQUIREMENTS:
+#    pip install -r requirements_v2.txt
+#
+# 4. VERIFY INSTALLATION:
+#    python -c "import tbats, neuralprophet, prophet, xgboost, pmdarima; print('All packages loaded successfully!')"
+#
+# ============================================================================
+# TROUBLESHOOTING
+# ============================================================================
+#
+# If numpy/pmdarima compatibility issues persist:
+# 1. pip uninstall -y numpy pmdarima tbats
+# 2. pip install "numpy>=1.21.0,<1.27.0"
+# 3. pip install pmdarima tbats
+#
+# If Prophet installation fails:
+# - Windows: Ensure Microsoft C++ Build Tools are installed
+# - Install via: pip install prophet --no-cache-dir
+#
+# If TensorFlow GPU issues:
+# - For CPU-only: pip install tensorflow-cpu instead
+# - For GPU: Ensure CUDA 11.8+ is installed
+#
+# ============================================================================

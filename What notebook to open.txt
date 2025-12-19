@@ -1,0 +1,16 @@
+current model training NOTEBOOK working:
+MODEL TRAINING Angono Safe Save Before AR IMPLEMENTATION copy 4
+--produces the model's .pkl
+
+
+
+individual model trianing notebooks:
+[1: individual model RESIDUAL SENSIVITIY ANALYSIS
+OR
+2: individual HYBRID MODE]
+--both used for thesis SENSITIVITY ANALYSIS. No model produced
+
+----------------
+Eda (data understanding)
+https://colab.research.google.com/drive/10l7hqO1VIYepN4bddkEadfdDURDtXdv0?usp=sharing
+

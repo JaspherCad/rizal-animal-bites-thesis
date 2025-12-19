@@ -1,0 +1,279 @@
+{
+  "success": true,
+  "interpretability": {
+    "municipality": "ANGONO",
+    "barangay": "Mahabang Parang",
+    "trend": {
+      "dates": [
+        "2022-01",
+        "2022-02",
+        "2022-03",
+        "2022-04",
+        "2022-05",
+        "2022-06",
+        "2022-07",
+        "2022-08",
+        "2022-09",
+        "2022-10",
+        "2022-11",
+        "2022-12",
+        "2023-01",
+        "2023-02",
+        "2023-03",
+        "2023-04",
+        "2023-05",
+        "2023-06",
+        "2023-07",
+        "2023-08",
+        "2023-09",
+        "2023-10",
+        "2023-11",
+        "2023-12",
+        "2024-01",
+        "2024-02",
+        "2024-03",
+        "2024-04",
+        "2024-05",
+        "2024-06",
+        "2024-07",
+        "2024-08",
+        "2024-09",
+        "2024-10",
+        "2024-11",
+        "2024-12",
+        "2025-01",
+        "2025-02",
+        "2025-03",
+        "2025-04",
+        "2025-05",
+        "2025-06",
+        "2025-07"
+      ],
+      "values": [
+        73.6,
+        78.93,
+        83.74,
+        89.07,
+        94.77,
+        100.84,
+        106.71,
+        112.1,
+        116.99,
+        121.72,
+        126.71,
+        131.65,
+        136.77,
+        141.33,
+        144.02,
+        147.0,
+        149.88,
+        151.33,
+        152.72,
+        154.16,
+        156.51,
+        158.97,
+        161.5,
+        165.9,
+        171.48,
+        177.06,
+        182.28,
+        187.86,
+        193.26,
+        198.83,
+        204.23,
+        209.81,
+        215.39,
+        220.79,
+        226.37,
+        231.77,
+        237.35,
+        242.93,
+        247.96,
+        253.54,
+        258.94,
+        264.52,
+        269.92
+      ],
+      "description": "Long-term direction of rabies cases (upward/downward pattern)"
+    },
+    "seasonality": {
+      "dates": [
+        "2022-01",
+        "2022-02",
+        "2022-03",
+        "2022-04",
+        "2022-05",
+        "2022-06",
+        "2022-07",
+        "2022-08",
+        "2022-09",
+        "2022-10",
+        "2022-11",
+        "2022-12",
+        "2023-01",
+        "2023-02",
+        "2023-03",
+        "2023-04",
+        "2023-05",
+        "2023-06",
+        "2023-07",
+        "2023-08",
+        "2023-09",
+        "2023-10",
+        "2023-11",
+        "2023-12",
+        "2024-01",
+        "2024-02",
+        "2024-03",
+        "2024-04",
+        "2024-05",
+        "2024-06",
+        "2024-07",
+        "2024-08",
+        "2024-09",
+        "2024-10",
+        "2024-11",
+        "2024-12",
+        "2025-01",
+        "2025-02",
+        "2025-03",
+        "2025-04",
+        "2025-05",
+        "2025-06",
+        "2025-07"
+      ],
+      "values": [
+        -8.72,
+        -7.29,
+        0.31,
+        11.32,
+        16.9,
+        12.75,
+        2.97,
+        -3.96,
+        -3.3,
+        -0.78,
+        -5.04,
+        -16.72,
+        -26.12,
+        -19.75,
+        0.53,
+        25.1,
+        34.57,
+        23.84,
+        5.23,
+        -6.3,
+        -5.07,
+        -1.16,
+        -7.01,
+        -22.97,
+        -35.67,
+        -27.04,
+        1.61,
+        35.48,
+        48.4,
+        33.56,
+        7.04,
+        -9.58,
+        -7.49,
+        -1.75,
+        -11.28,
+        -35.81,
+        -53.9,
+        -39.39,
+        1.94,
+        51.16,
+        69.46,
+        47.92,
+        10.19
+      ],
+      "description": "Recurring yearly patterns (e.g., higher cases in certain months)"
+    },
+    "feature_importance": {
+      "features": [
+        {
+          "feature": "rolling_std_3",
+          "importance": 0.3544,
+          "percentage": 35.44
+        },
+        {
+          "feature": "np_prediction",
+          "importance": 0.1884,
+          "percentage": 18.84
+        },
+        {
+          "feature": "rate_of_change_1",
+          "importance": 0.0844,
+          "percentage": 8.44
+        },
+        {
+          "feature": "lag_1",
+          "importance": 0.0795,
+          "percentage": 7.95
+        },
+        {
+          "feature": "month_cos",
+          "importance": 0.0647,
+          "percentage": 6.47
+        },
+        {
+          "feature": "rolling_mean_3",
+          "importance": 0.0524,
+          "percentage": 5.24
+        },
+        {
+          "feature": "lag_12",
+          "importance": 0.0524,
+          "percentage": 5.24
+        },
+        {
+          "feature": "month_sin",
+          "importance": 0.0427,
+          "percentage": 4.27
+        },
+        {
+          "feature": "Month",
+          "importance": 0.041,
+          "percentage": 4.1
+        },
+        {
+          "feature": "lag_2",
+          "importance": 0.0336,
+          "percentage": 3.36
+        },
+        {
+          "feature": "Year",
+          "importance": 0.0064,
+          "percentage": 0.64
+        }
+      ],
+      "description": "Which factors contribute most to predictions",
+      "top_3_features": [
+        {
+          "feature": "rolling_std_3",
+          "importance": 0.3544,
+          "percentage": 35.44
+        },
+        {
+          "feature": "np_prediction",
+          "importance": 0.1884,
+          "percentage": 18.84
+        },
+        {
+          "feature": "rate_of_change_1",
+          "importance": 0.0844,
+          "percentage": 8.44
+        }
+      ]
+    },
+    "changepoints": {
+      "points": [],
+      "description": "Dates where the trend significantly changed (e.g., policy changes, outbreaks)"
+    },
+    "model_config": {
+      "neuralprophet_changepoint_prior_scale": 0.75,
+      "xgboost_n_estimators": 50,
+      "xgboost_max_depth": 3
+    }
+  }
+}

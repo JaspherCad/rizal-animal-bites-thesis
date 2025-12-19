@@ -1,0 +1,123 @@
+#I have already saved models on C:\Users\Jaspher\Documents\JASPHERS NOTEBOOK\data sci\THESIS\lightGbm prophet\DONT DEELTE THESE FILES\models\barangay_models_20251010_015619\ANGONO
+
+#or bascialy from here just back one "../models/barangay/{here}"
+
+# ==============================================
+# MODEL PERSISTENCE: Save Trained Models
+# ==============================================
+
+#DONE 
+# import pickle
+# import os
+# from datetime import datetime
+
+# def save_barangay_models(barangay_results, municipality_summaries, all_barangay_data):
+#     """
+#     Save all trained models and metadata to disk for later use.
+#     Creates a models/ directory with organized subdirectories.
+#     """
+#     # Create directory structure
+#     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+#     base_dir = f"models/barangay_models_{timestamp}"
+    
+#     os.makedirs(base_dir, exist_ok=True)
+#     os.makedirs(f"{base_dir}/metadata", exist_ok=True)
+    
+#     print("💾 SAVING TRAINED MODELS...")
+#     print("=" * 60)
+    
+#     # Save individual barangay models
+#     saved_count = 0
+#     for key, result in barangay_results.items():
+#         municipality = result['municipality']
+#         barangay = result['barangay']
+        
+#         # Create municipality subdirectory
+#         mun_dir = f"{base_dir}/{municipality.replace(' ', '_')}"
+#         os.makedirs(mun_dir, exist_ok=True)
+        
+#         # Save model metadata (predictions, metrics, dates)
+#         model_data = {
+#             'municipality': municipality,
+#             'barangay': barangay,
+#             'training_months': result['training_months'],
+#             'validation_months': result['validation_months'],
+            
+#             # Validation metrics
+#             'np_val_mae': result['np_val_mae'],
+#             'hybrid_val_mae': result['hybrid_val_mae'],
+#             'val_improvement': result['val_improvement'],
+#             'np_val_mape': result['np_val_mape'],
+#             'hybrid_val_mape': result['hybrid_val_mape'],
+#             'np_val_rmse': result['np_val_rmse'],
+#             'hybrid_val_rmse': result['hybrid_val_rmse'],
+#             'np_val_r2': result['np_val_r2'],
+#             'hybrid_val_r2': result['hybrid_val_r2'],
+#             'np_val_mase': result['np_val_mase'],
+#             'hybrid_val_mase': result['hybrid_val_mase'],
+            
+#             # Training data stats
+#             'total_train_cases': result['total_train_cases'],
+#             'total_val_cases': result['total_val_cases'],
+            
+#             # Predictions (for visualization)
+#             'train_dates': result['train_dates'],
+#             'val_dates': result['val_dates'],
+#             'actual_train': result['actual_train'],
+#             'actual_val': result['actual_val'],
+#             'np_train_pred': result['np_train_pred'],
+#             'np_val_pred': result['np_val_pred'],
+#             'hybrid_train_pred': result['hybrid_train_pred'],
+#             'hybrid_val_pred': result['hybrid_val_pred']
+#         }
+        
+#         # Save to pickle
+#         filename = f"{mun_dir}/{barangay.replace(' ', '_').replace('/', '_')}.pkl"
+#         with open(filename, 'wb') as f:
+#             pickle.dump(model_data, f)
+        
+#         saved_count += 1
+#         print(f"   ✅ Saved: {municipality} - {barangay}")
+    
+#     # Save municipality summaries
+#     summary_file = f"{base_dir}/metadata/municipality_summaries.pkl"
+#     with open(summary_file, 'wb') as f:
+#         pickle.dump(municipality_summaries, f)
+    
+#     # Save all barangay data (for batch processing)
+#     all_data_file = f"{base_dir}/metadata/all_barangay_data.pkl"
+#     with open(all_data_file, 'wb') as f:
+#         pickle.dump(all_barangay_data, f)
+    
+#     # Save summary CSV for easy reference
+#     summary_data = []
+#     for result in all_barangay_data:
+#         periods = get_municipality_periods(result['municipality'])
+#         val_period = f"{periods['validation_start'].strftime('%b%y')}-{periods['validation_end'].strftime('%b%y')}"
+        
+#         summary_data.append({
+#             'Municipality': result['municipality'],
+#             'Barangay': result['barangay'],
+#             'Val_Period': val_period,
+#             'Train_Months': result['training_months'],
+#             'Val_Months': result['validation_months'],
+#             'Hybrid_Val_MAE': result['hybrid_val_mae'],
+#             'MAE_Improvement_%': result['val_improvement'],
+#             'Total_Val_Cases': result['total_val_cases']
+#         })
+    
+#     summary_df = pd.DataFrame(summary_data)
+#     summary_df = summary_df.sort_values('Hybrid_Val_MAE', ascending=True)
+#     summary_df.to_csv(f"{base_dir}/metadata/model_summary.csv", index=False)
+    
+#     print()
+#     print(f"✅ MODEL SAVING COMPLETE!")
+#     print(f"   📁 Location: {base_dir}")
+#     print(f"   📊 Models Saved: {saved_count}")
+#     print(f"   📋 Summary CSV: {base_dir}/metadata/model_summary.csv")
+#     print()
+    
+#     return base_dir
+
+# # Execute model saving
+# model_directory = save_barangay_models(barangay_results, municipality_summaries, all_barangay_data)
