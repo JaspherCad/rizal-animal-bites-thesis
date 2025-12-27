@@ -39,46 +39,123 @@ app.add_middleware(
 # FEATURE ENGINEERING FOR MUNICIPALITIES
 # ==============================================
 
-def add_cainta_seasonal_features(df):
-    """Add CAINTA-specific seasonal patterns"""
-    df = df.copy()
-    
-    # MAY PEAK: May is consistently highest across all years
-    df['may_peak'] = (df['ds'].dt.month == 5).astype(int)
-    
-    # LOW SEASON: Jan-Feb-March-April consistently lowest
-    df['low_season'] = ((df['ds'].dt.month >= 1) & (df['ds'].dt.month <= 4)).astype(int)
-    
-    # SPRING RAMP-UP: March-April-May increasing pattern
-    df['spring_ramp'] = ((df['ds'].dt.month >= 3) & (df['ds'].dt.month <= 5)).astype(int)
-    
-    # HOLIDAY EFFECT: January specifically (New Year impact)
-    df['january_holiday'] = (df['ds'].dt.month == 1).astype(int)
-    
-    # POST-MAY DECLINE: June onwards typically lower than May
-    df['post_may_decline'] = ((df['ds'].dt.month >= 6) & (df['ds'].dt.month <= 12)).astype(int)
-    
-    return df
+# ❌ DEPRECATED: Seasonal regressors removed from model training
+# These functions are kept for component extraction from OLD models only
+# New models use ONLY vaccination regressors for ANTIPOLO
+
+# def add_cainta_seasonal_features(df):
+#     """Add CAINTA-specific seasonal patterns"""
+#     df = df.copy()
+#     
+#     # MAY PEAK: May is consistently highest across all years
+#     df['may_peak'] = (df['ds'].dt.month == 5).astype(int)
+#     
+#     # LOW SEASON: Jan-Feb-March-April consistently lowest
+#     df['low_season'] = ((df['ds'].dt.month >= 1) & (df['ds'].dt.month <= 4)).astype(int)
+#     
+#     # SPRING RAMP-UP: March-April-May increasing pattern
+#     df['spring_ramp'] = ((df['ds'].dt.month >= 3) & (df['ds'].dt.month <= 5)).astype(int)
+#     
+#     # HOLIDAY EFFECT: January specifically (New Year impact)
+#     df['january_holiday'] = (df['ds'].dt.month == 1).astype(int)
+#     
+#     # POST-MAY DECLINE: June onwards typically lower than May
+#     df['post_may_decline'] = ((df['ds'].dt.month >= 6) & (df['ds'].dt.month <= 12)).astype(int)
+#     
+#     return df
 
 
-def add_angono_seasonal_features(df):
-    """Add ANGONO-specific seasonal patterns as binary features"""
+# def add_angono_seasonal_features(df):
+#     """Add ANGONO-specific seasonal patterns as binary features"""
+#     df = df.copy()
+#     
+#     # HIGH SEASON: April-May-June (consistently high across 2022-2025)
+#     df['high_season'] = df['ds'].dt.month.isin([4, 5, 6]).astype(int)
+#     
+#     # JULY DIP: Always drops after high season
+#     df['july_dip'] = (df['ds'].dt.month == 7).astype(int)
+#     
+#     # AUGUST RISE: Increases again after July dip
+#     df['august_rise'] = (df['ds'].dt.month == 8).astype(int)
+#     
+#     # LOW SEASON: December-January (consistently lowest)
+#     df['low_season'] = df['ds'].dt.month.isin([12, 1]).astype(int)
+#     
+#     # POST-APRIL 2024 REGIME: Higher volatility period
+#     df['post_april_2024'] = (df['ds'] >= pd.Timestamp('2024-04-01')).astype(int)
+#     
+#     return df
+
+
+def add_antipolo_vaccination_campaigns(df):
+    """
+    Add mass anti-rabies vaccination campaign indicators for ALL ANTIPOLO barangays.
+    These represent city-wide vaccination drives that affect all barangays.
+    
+    Campaigns from Facebook posts and municipal announcements:
+    - 2023: January-April city-wide campaigns across all barangays
+    - 2024: March campaigns in multiple barangays
+    
+    Returns base indicators + 3-month lagged effects (vaccination effect appears after 1-3 months).
+    Total: 5 campaigns × 4 variants (base + 3 lags) = 20 features
+    """
     df = df.copy()
     
-    # HIGH SEASON: April-May-June (consistently high across 2022-2025)
-    df['high_season'] = df['ds'].dt.month.isin([4, 5, 6]).astype(int)
+    # Initialize ALL vaccination columns as 0 FIRST (ensures they always exist)
+    all_vax_columns = []
+    for campaign in ['vaccination_jan2023', 'vaccination_feb2023', 'vaccination_mar2023', 
+                     'vaccination_apr2023', 'vaccination_mar2024']:
+        df[campaign] = 0
+        all_vax_columns.append(campaign)
+        # Also initialize lag columns
+        df[f'{campaign}_lag1'] = 0
+        df[f'{campaign}_lag2'] = 0
+        df[f'{campaign}_lag3'] = 0
+        all_vax_columns.extend([f'{campaign}_lag1', f'{campaign}_lag2', f'{campaign}_lag3'])
     
-    # JULY DIP: Always drops after high season
-    df['july_dip'] = (df['ds'].dt.month == 7).astype(int)
+    # Now set actual campaign dates (only if they exist in the data)
+    # 2023 JANUARY CAMPAIGN (across San Jose, Mambugan, San Roque, Bagong Nayon barangays)
+    mask_jan2023 = (df['ds'] == pd.Timestamp('2023-01-01'))
+    if mask_jan2023.any():
+        df.loc[mask_jan2023, 'vaccination_jan2023'] = 1
     
-    # AUGUST RISE: Increases again after July dip
-    df['august_rise'] = (df['ds'].dt.month == 8).astype(int)
+    # 2023 FEBRUARY CAMPAIGN (continuation in San Jose barangay)
+    mask_feb2023 = (df['ds'] == pd.Timestamp('2023-02-01'))
+    if mask_feb2023.any():
+        df.loc[mask_feb2023, 'vaccination_feb2023'] = 1
     
-    # LOW SEASON: December-January (consistently lowest)
-    df['low_season'] = df['ds'].dt.month.isin([12, 1]).astype(int)
+    # 2023 MARCH CAMPAIGN (San Jose Lower areas)
+    mask_mar2023 = (df['ds'] == pd.Timestamp('2023-03-01'))
+    if mask_mar2023.any():
+        df.loc[mask_mar2023, 'vaccination_mar2023'] = 1
     
-    # POST-APRIL 2024 REGIME: Higher volatility period
-    df['post_april_2024'] = (df['ds'] >= pd.Timestamp('2024-04-01')).astype(int)
+    # 2023 APRIL CAMPAIGN (Dela Paz, San Jose, city-wide)
+    mask_apr2023 = (df['ds'] == pd.Timestamp('2023-04-01'))
+    if mask_apr2023.any():
+        df.loc[mask_apr2023, 'vaccination_apr2023'] = 1
+    
+    # 2024 MARCH CAMPAIGN (Muntindilaw, Vista Verde, and other areas)
+    mask_mar2024 = (df['ds'] == pd.Timestamp('2024-03-01'))
+    if mask_mar2024.any():
+        df.loc[mask_mar2024, 'vaccination_mar2024'] = 1
+    
+    # CREATE LAGGED EFFECTS (1-3 months after vaccination)
+    # Only calculate lags if we have historical data to shift from
+    if len(df) > 3:
+        df = df.sort_values('ds').reset_index(drop=True)
+        
+        for col in ['vaccination_jan2023', 'vaccination_feb2023', 'vaccination_mar2023', 
+                    'vaccination_apr2023', 'vaccination_mar2024']:
+            # Calculate shifts and fill with existing values (not NaN)
+            df[f'{col}_lag1'] = df[col].shift(1).fillna(0)
+            df[f'{col}_lag2'] = df[col].shift(2).fillna(0)
+            df[f'{col}_lag3'] = df[col].shift(3).fillna(0)
+    # else: lag columns already initialized as 0 above
+    
+    # 🔥 CRITICAL: Drop base campaign columns (only lag columns are future regressors)
+    # NeuralProphet was trained with ONLY the lag columns, not the base columns
+    df = df.drop(columns=['vaccination_jan2023', 'vaccination_feb2023', 'vaccination_mar2023',
+                           'vaccination_apr2023', 'vaccination_mar2024'])
     
     return df
 
@@ -94,6 +171,7 @@ def extract_model_components(model_data):
     try:
         np_model = model_data['np_model']
         xgb_model = model_data['xgb_model']
+        municipality = model_data.get('municipality', '')  # 🆕 Get municipality for seasonal features
         
         # Collect all historical dates and actual values
         dates_list = []
@@ -124,6 +202,8 @@ def extract_model_components(model_data):
         
         # Sort by date and remove duplicates
         df_components = df_components.drop_duplicates(subset=['ds']).sort_values('ds').reset_index(drop=True)
+
+        
         
         # 🆕 ADD WEATHER REGRESSORS WITH ACTUAL HISTORICAL VALUES
         weather_cols = model_data.get('regressors', {}).get('weather', [])
@@ -145,38 +225,33 @@ def extract_model_components(model_data):
                     df_components[col] = 0.0
                 print(f"      ⚠️ No historical weather data saved in model, using neutral values")
         
-        # 🆕 ADD VACCINATION REGRESSORS WITH ACTUAL HISTORICAL VALUES
+        # 🆕 VACCINATION REGRESSORS: Will be added by function call below for ANTIPOLO
+        # (No need to load from saved model data - function creates them fresh)
         municipality = model_data.get('municipality', '')
-        vax_cols = model_data.get('regressors', {}).get('vaccination', [])
-        vaccination_data = model_data.get('vaccination_data', {})
-        if vax_cols and municipality == "CITY OF ANTIPOLO":
-            print(f"   💉 Adding {len(vax_cols)} vaccination columns for component extraction")
-            if vaccination_data:
-                # Use actual historical vaccination campaign data
-                for col in vax_cols:
-                    if col in vaccination_data and len(vaccination_data[col]) == len(df_components):
-                        df_components[col] = vaccination_data[col]
-                        active_months = sum(vaccination_data[col])
-                        print(f"      ✅ {col}: Using historical values ({active_months} active months)")
-                    else:
-                        df_components[col] = 0
-                        print(f"      ⚠️ {col}: No data available, using neutral values")
-            else:
-                # Fallback: use neutral values
-                for col in vax_cols:
-                    df_components[col] = 0
-                print(f"      ⚠️ No historical vaccination data saved in model, using neutral values")
-        else:
-            # DEBUG: Check if vaccination data exists in a different format
-            if municipality == "CITY OF ANTIPOLO":
-                print(f"   ⚠️ ANTIPOLO detected but no vaccination regressors found in metadata")
-                print(f"   📋 Regressor metadata: {model_data.get('regressors', {})}")
         
-        # 🆕 ADD SEASONAL REGRESSORS WITH ACTUAL HISTORICAL VALUES
+        # 🆕 ADD SEASONAL REGRESSORS WITH ACTUAL HISTORICAL VALUES (DEPRECATED - only for old models)
+        # NEW MODELS: Only ANTIPOLO uses vaccination regressors, no seasonal regressors
         seasonal_cols = model_data.get('regressors', {}).get('seasonal', [])
         seasonal_data = model_data.get('seasonal_data', {})
-        if seasonal_cols:
-            print(f"   🎯 Adding {len(seasonal_cols)} seasonal columns for component extraction")
+        
+        # ❌ REMOVED: CAINTA/ANGONO seasonal features (no longer used in new models)
+        # if municipality == "CAINTA":
+        #     print(f"   🎯 Adding CAINTA seasonal features for component extraction")
+        #     df_components = add_cainta_seasonal_features(df_components)
+        # elif municipality == "ANGONO":
+        #     print(f"   🎯 Adding ANGONO seasonal features for component extraction")
+        #     df_components = add_angono_seasonal_features(df_components)
+        
+        # ✅ NEW: Add ANTIPOLO vaccination campaigns for component extraction
+        if municipality == "CITY OF ANTIPOLO":
+            print(f"   💉 Adding ANTIPOLO vaccination campaigns for component extraction")
+            df_components = add_antipolo_vaccination_campaigns(df_components)
+            vax_cols_added = ['vaccination_jan2023', 'vaccination_feb2023', 'vaccination_mar2023', 
+                             'vaccination_apr2023', 'vaccination_mar2024']
+            print(f"      ✅ ANTIPOLO vaccination features added: {len(vax_cols_added)} campaigns × 4 variants = 20 features")
+        elif seasonal_cols:
+            # For OLD models with seasonal regressors in metadata (backward compatibility)
+            print(f"   ⚠️ Loading OLD model with {len(seasonal_cols)} seasonal regressors (deprecated)")
             if seasonal_data:
                 # Use actual historical seasonal pattern data
                 for col in seasonal_cols:
@@ -188,13 +263,9 @@ def extract_model_components(model_data):
                         df_components[col] = 0
                         print(f"      ⚠️ {col}: No data available, using neutral values")
             else:
-                # Fallback: Municipality-specific feature functions
-                if municipality == "CAINTA":
-                    df_components = add_cainta_seasonal_features(df_components)
-                    print(f"      ⚠️ Using computed CAINTA seasonal features")
-                elif municipality == "ANGONO":
-                    df_components = add_angono_seasonal_features(df_components)
-                    print(f"      ⚠️ Using computed ANGONO seasonal features")
+                for col in seasonal_cols:
+                    df_components[col] = 0
+                    print(f"      ⚠️ {col}: No data, using zeros")
         
         # Get NeuralProphet components decomposition
         # This includes trend, seasonality patterns, AND holidays
@@ -230,7 +301,20 @@ def extract_model_components(model_data):
         
         # 🆕 Get regressor metadata from saved model
         weather_cols = model_data.get('regressors', {}).get('weather', [])
+        
+        # 🆕 For vaccination: prefer metadata, fall back to auto-detection for old models
         vax_cols = model_data.get('regressors', {}).get('vaccination', [])
+        if municipality == "CITY OF ANTIPOLO":
+            if vax_cols:
+                # New models with metadata: Use the exported regressor list
+                print(f"   💉 Using {len(vax_cols)} vaccination regressors from model metadata")
+            else:
+                # Old models without metadata: Auto-detect columns (already added by function above)
+                vax_cols = [col for col in df_components.columns if 'vaccination' in col]
+                print(f"   💉 Auto-detected {len(vax_cols)} vaccination regressors (old model)")
+        else:
+            vax_cols = []
+        
         seasonal_cols = model_data.get('regressors', {}).get('seasonal', [])
         
         print(f"   🔍 Extracting regressors: Weather={len(weather_cols)}, Vaccination={len(vax_cols)}, Seasonal={len(seasonal_cols)}")
@@ -449,17 +533,14 @@ def predict_next_month(model_data):
             for col in weather_cols:
                 future_df[col] = 0.0  # Neutral weather impact
         
-        # 🆕 ADD VACCINATION REGRESSORS (if model was trained with them)
-        vax_cols = model_data.get('regressors', {}).get('vaccination', [])
-        if vax_cols and municipality == "CITY OF ANTIPOLO":
-            for col in vax_cols:
-                future_df[col] = 0  # No active campaign
+        # 🆕 ADD VACCINATION REGRESSORS FOR ANTIPOLO (generate fresh using function)
+        if municipality == "CITY OF ANTIPOLO":
+            future_df = add_antipolo_vaccination_campaigns(future_df)
+            print(f"   💉 Added ALL 20 ANTIPOLO vaccination columns (guaranteed)")
         
-        # 🆕 ADD MUNICIPALITY-SPECIFIC SEASONAL FEATURES
-        if municipality == "CAINTA":
-            future_df = add_cainta_seasonal_features(future_df)
-        elif municipality == "ANGONO":
-            future_df = add_angono_seasonal_features(future_df)
+        # ❌ REMOVED: CAINTA/ANGONO seasonal features (no longer used in new models)
+        # New models only use NeuralProphet's Fourier seasonality + holidays
+        # Only ANTIPOLO has custom regressors (vaccination campaigns)
         
         # Get NeuralProphet prediction
         np_forecast = np_model.predict(future_df)
@@ -520,20 +601,14 @@ def predict_future_months(model_data, months_ahead=12):
                 future_df[col] = 0.0  # Neutral impact (you can replace with historical means)
         
         # 🆕 ADD VACCINATION REGRESSORS (if model was trained with them - ANTIPOLO only)
-        vax_cols = model_data.get('regressors', {}).get('vaccination', [])
-        if vax_cols and municipality == "CITY OF ANTIPOLO":
-            print(f"   💉 Adding {len(vax_cols)} vaccination regressors for future prediction")
-            # Set to 0 (no active campaign) unless you want to simulate future campaigns
-            for col in vax_cols:
-                future_df[col] = 0  # No vaccination campaign by default
+        # 🆕 ADD VACCINATION REGRESSORS FOR ANTIPOLO (generate fresh using function)
+        if municipality == "CITY OF ANTIPOLO":
+            future_df = add_antipolo_vaccination_campaigns(future_df)
+            print(f"   💉 Added ALL 20 ANTIPOLO vaccination columns (guaranteed)")
         
-        # 🆕 ADD MUNICIPALITY-SPECIFIC SEASONAL FEATURES
-        if municipality == "CAINTA":
-            future_df = add_cainta_seasonal_features(future_df)
-            print(f"   🎯 Added CAINTA seasonal features for future prediction")
-        elif municipality == "ANGONO":
-            future_df = add_angono_seasonal_features(future_df)
-            print(f"   🎯 Added ANGONO seasonal features for future prediction")
+        # ❌ REMOVED: CAINTA/ANGONO seasonal features (no longer used in new models)
+        # New models only use NeuralProphet's Fourier seasonality + holidays
+        # Only ANTIPOLO has custom regressors (vaccination campaigns)
         
         # Get NeuralProphet predictions for all future dates
         np_forecast = np_model.predict(future_df)
@@ -581,8 +656,9 @@ def predict_future_months(model_data, months_ahead=12):
 
 # ==============================================
 # LOAD MODELS  Latest_FINALIZED_barangay_models_20251207_170009 STABLEST
+#Latest_FINALIZED_barangay_models_20251223_110351 == DO NOT HAVE FUTURE REGRESSORS (cainta/angono non)
 # ==============================================
-MODEL_DIR = "../../saved_models_v2/Latest_FINALIZED_barangay_models_20251207_170009"
+MODEL_DIR = "../../saved_models_v2/Latest_FINALIZED_barangay_models_20251228_000045"
 # MODEL_DIR = "../../saved_models_v2/Latest_FINALIZED_barangay_models_20251207_142420"
 # MODEL_DIR = "../../saved_models_v2/AFINALIZED_barangay_models_20251103_002104"
 
@@ -1348,11 +1424,13 @@ async def generate_pdf_report(municipality: str, barangay: str):
             for col in vax_cols:
                 forecast_df[col] = 0
     
-    if 'seasonal_data' in model_data and model_data['seasonal_data'] is not None:
-        if municipality.upper() == 'CAINTA':
-            forecast_df = add_cainta_seasonal_features(forecast_df)
-        elif municipality.upper() == 'ANGONO':
-            forecast_df = add_angono_seasonal_features(forecast_df)
+    # 🆕 ADD SEASONAL FEATURES (models now trained with them!)
+    if municipality.upper() == 'CAINTA':
+        forecast_df = add_cainta_seasonal_features(forecast_df)
+        print(f"   🎯 Added CAINTA seasonal features for PDF forecast")
+    elif municipality.upper() == 'ANGONO':
+        forecast_df = add_angono_seasonal_features(forecast_df)
+        print(f"   🎯 Added ANGONO seasonal features for PDF forecast")
     
     # Make predictions
     np_forecast = model_data['np_model'].predict(forecast_df)
