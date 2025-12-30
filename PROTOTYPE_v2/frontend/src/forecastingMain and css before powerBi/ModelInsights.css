@@ -1,0 +1,316 @@
+/* Model Insights Styling */
+.model-insights {
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+}
+
+.loading-message {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 16px;
+}
+
+/* Header */
+.insights-header {
+  margin-bottom: 30px;
+  border-bottom: 3px solid #2196F3;
+  padding-bottom: 15px;
+}
+
+.insights-header h3 {
+  margin: 0 0 5px 0;
+  color: #1976D2;
+  font-size: 24px;
+}
+
+.insights-header .subtitle {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+/* Section Styling */
+.insight-section {
+  margin-bottom: 40px;
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  border-left: 4px solid #2196F3;
+}
+
+.section-header {
+  margin-bottom: 20px;
+}
+
+.section-header h4 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 20px;
+}
+
+.section-description {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Custom Tooltip */
+.custom-tooltip {
+  background: white;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.custom-tooltip .label {
+  margin: 0 0 5px 0;
+  color: #333;
+}
+
+.custom-tooltip p {
+  margin: 3px 0;
+  font-size: 13px;
+}
+
+/* Feature Legend */
+.feature-legend {
+  margin-top: 20px;
+  padding: 15px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+}
+
+/* Holiday Summary */
+.holiday-summary {
+  margin-top: 20px;
+  padding: 15px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #FF5722;
+}
+
+.holiday-summary h5 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.holiday-effects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.holiday-effect-item {
+  padding: 10px;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 13px;
+}
+
+.holiday-effect-item.positive {
+  background: #fff3e0;
+  border-left: 3px solid #FF9800;
+}
+
+.holiday-effect-item.negative {
+  background: #e8f5e9;
+  border-left: 3px solid #4CAF50;
+}
+
+.holiday-date {
+  font-weight: 600;
+  color: #333;
+}
+
+.holiday-name {
+  color: #FF5722;
+  font-weight: 600;
+  font-size: 14px;
+  margin: 2px 0;
+}
+
+.holiday-impact {
+  color: #666;
+  font-size: 12px;
+}
+
+.holiday-note {
+  margin: 10px 0 0 0;
+  padding: 10px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
+}
+
+.feature-legend {
+  margin-top: 20px;
+  padding: 15px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+}
+
+.feature-legend h5 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.feature-legend ul {
+  margin: 0;
+  padding-left: 20px;
+  list-style-type: disc;
+}
+
+.feature-legend li {
+  margin: 8px 0;
+  color: #555;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.feature-legend strong {
+  color: #FF9800;
+}
+
+/* Config Grid */
+.config-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.config-card {
+  background: white;
+  padding: 15px;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  text-align: center;
+}
+
+.config-label {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.config-value {
+  font-size: 22px;
+  color: #2196F3;
+  font-weight: bold;
+}
+
+/* Insights Summary */
+.insights-summary {
+  margin-top: 30px;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  color: white;
+}
+
+.insights-summary h5 {
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  color: white;
+}
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.summary-card {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 15px;
+  border-radius: 6px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.summary-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.summary-content {
+  flex: 1;
+}
+
+.summary-content strong {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 15px;
+  color: white;
+}
+
+.summary-content p {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.5;
+}
+
+/* 🆕 Regressor Note Styling */
+.regressor-note {
+  margin-top: 15px;
+  padding: 12px;
+  background: white;
+  border-radius: 6px;
+  border-left: 4px solid #2196F3;
+}
+
+.regressor-note p {
+  margin: 5px 0;
+  font-size: 13px;
+  color: #555;
+  line-height: 1.6;
+}
+
+.regressor-note strong {
+  color: #2196F3;
+  font-weight: 600;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .model-insights {
+    padding: 15px;
+  }
+  
+  .insights-header h3 {
+    font-size: 20px;
+  }
+  
+  .section-header h4 {
+    font-size: 18px;
+  }
+  
+  .config-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .summary-cards {
+    grid-template-columns: 1fr;
+  }
+}

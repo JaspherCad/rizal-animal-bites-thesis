@@ -1,0 +1,282 @@
+/* =========================================
+   LEAFLET GIS MAP STYLES
+   Professional Geographic Information System Mapping
+   ========================================= */
+
+.gis-map-wrapper {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  margin-bottom: 30px;
+  animation: mapFadeIn 0.6s ease-in-out;
+}
+
+.gis-map-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.gis-map-header h2 {
+  margin: 0;
+  color: white;
+  font-size: 24px;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.map-stats {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.map-stats p {
+  margin: 0;
+  font-size: 14px;
+  color: #333;
+}
+
+.map-stats strong {
+  color: #764ba2;
+  font-size: 16px;
+}
+
+.map-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.control-btn {
+  background: white;
+  border: 2px solid #764ba2;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #764ba2;
+}
+
+.control-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.control-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: white;
+}
+
+/* Leaflet Container */
+.leaflet-container {
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+  z-index: 1;
+}
+
+/* Custom Popup Styles */
+.gis-popup {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  min-width: 200px;
+}
+
+.gis-popup h3 {
+  margin: 0 0 10px 0;
+  color: #764ba2;
+  font-size: 18px;
+  border-bottom: 2px solid #764ba2;
+  padding-bottom: 8px;
+}
+
+.gis-popup p {
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+.popup-drill-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 10px;
+  transition: all 0.3s ease;
+}
+
+.popup-drill-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 3px 10px rgba(118, 75, 162, 0.5);
+}
+
+/* Legend */
+.gis-legend {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  margin-top: 20px;
+  box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+}
+
+.gis-legend h4 {
+  margin: 0 0 15px 0;
+  color: #764ba2;
+  font-size: 18px;
+  border-bottom: 2px solid #764ba2;
+  padding-bottom: 8px;
+}
+
+.legend-items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.legend-color {
+  width: 30px;
+  height: 20px;
+  border-radius: 4px;
+  border: 2px solid white;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.legend-note {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #e0e0e0;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.6;
+}
+
+/* GIS Info Section */
+.gis-info {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  margin-top: 20px;
+  box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+}
+
+.gis-info h4 {
+  margin: 0 0 15px 0;
+  color: #764ba2;
+  font-size: 18px;
+  border-bottom: 2px solid #764ba2;
+  padding-bottom: 8px;
+}
+
+.gis-info ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.gis-info li {
+  margin: 8px 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #333;
+}
+
+/* Animations */
+@keyframes mapFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Leaflet Popup Customization */
+.leaflet-popup-content-wrapper {
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+}
+
+.leaflet-popup-tip {
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .gis-map-wrapper {
+    padding: 15px;
+  }
+
+  .gis-map-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .gis-map-header h2 {
+    font-size: 20px;
+  }
+
+  .leaflet-container {
+    height: 400px !important;
+  }
+
+  .map-controls {
+    width: 100%;
+  }
+
+  .control-btn {
+    flex: 1;
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+
+  .legend-items {
+    font-size: 12px;
+  }
+
+  .gis-info li {
+    font-size: 13px;
+  }
+}
+
+/* Leaflet Control Positioning */
+.leaflet-top.leaflet-left {
+  top: 10px;
+  left: 10px;
+}
+
+.leaflet-control-zoom {
+  border-radius: 8px !important;
+  overflow: hidden;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2) !important;
+}
+
+.leaflet-control-zoom a {
+  border: none !important;
+  font-size: 18px !important;
+  font-weight: bold !important;
+  transition: all 0.3s ease !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+}

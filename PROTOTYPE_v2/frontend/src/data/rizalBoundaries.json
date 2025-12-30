@@ -1,0 +1,66 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "CITY OF ANTIPOLO",
+        "municipality": "CITY OF ANTIPOLO",
+        "province": "RIZAL"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [121.15, 14.62], [121.20, 14.64], [121.24, 14.62], [121.26, 14.60],
+          [121.28, 14.58], [121.26, 14.54], [121.24, 14.52], [121.20, 14.50],
+          [121.16, 14.52], [121.14, 14.56], [121.15, 14.62]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "CAINTA",
+        "municipality": "CAINTA",
+        "province": "RIZAL"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [121.10, 14.56], [121.14, 14.58], [121.16, 14.56], [121.15, 14.54],
+          [121.13, 14.52], [121.10, 14.53], [121.08, 14.55], [121.10, 14.56]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "ANGONO",
+        "municipality": "ANGONO",
+        "province": "RIZAL"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [121.13, 14.50], [121.16, 14.52], [121.18, 14.50], [121.17, 14.48],
+          [121.15, 14.47], [121.12, 14.48], [121.13, 14.50]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "TAYTAY",
+        "municipality": "TAYTAY",
+        "province": "RIZAL"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [121.12, 14.54], [121.15, 14.56], [121.17, 14.54], [121.16, 14.52],
+          [121.14, 14.51], [121.11, 14.52], [121.12, 14.54]
+        ]]
+      }
+    }
+  ]
+}

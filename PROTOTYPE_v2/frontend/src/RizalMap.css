@@ -1,0 +1,244 @@
+/* RizalMap.css - Interactive Province Map Styling */
+
+.rizal-map-wrapper {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
+  padding: 30px;
+  margin: 30px 0;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.map-header {
+  text-align: center;
+  margin-bottom: 20px;
+  color: white;
+}
+
+.map-header h2 {
+  font-size: 28px;
+  margin: 0 0 10px 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.map-subtitle {
+  font-size: 14px;
+  opacity: 0.9;
+  margin: 0;
+}
+
+.map-container {
+  background: white;
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.rizal-svg-map {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Municipality areas */
+.municipality-area {
+  stroke: #1976d2;
+  stroke-width: 2;
+  transition: all 0.3s ease;
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+/* Risk level colors */
+.municipality-area.risk-high {
+  fill: #ef5350;
+  opacity: 0.7;
+}
+
+.municipality-area.risk-medium {
+  fill: #ff9800;
+  opacity: 0.7;
+}
+
+.municipality-area.risk-low {
+  fill: #66bb6a;
+  opacity: 0.7;
+}
+
+.municipality-area.risk-unknown {
+  fill: #bdbdbd;
+  opacity: 0.5;
+}
+
+/* Hover effects */
+.municipality-area:hover,
+.municipality-area.hovered {
+  opacity: 0.95 !important;
+  stroke-width: 4;
+  stroke: #fff;
+  filter: drop-shadow(4px 4px 8px rgba(0, 0, 0, 0.4));
+  transform: scale(1.02);
+  transform-origin: center;
+}
+
+/* Municipality labels */
+.municipality-label {
+  font-size: 18px;
+  font-weight: bold;
+  fill: #1a237e;
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+  pointer-events: none;
+}
+
+.municipality-cases {
+  font-size: 16px;
+  font-weight: 600;
+  fill: #d32f2f;
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+.municipality-barangays {
+  font-size: 12px;
+  fill: #424242;
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+/* Tooltip */
+.map-tooltip {
+  pointer-events: none;
+  animation: tooltipFadeIn 0.2s ease;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(0, -10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+}
+
+/* Legend */
+.map-legend {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 15px 20px;
+  margin-top: 20px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+}
+
+.map-legend h4 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  color: #1a237e;
+  text-align: center;
+}
+
+.legend-items {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.legend-color {
+  width: 30px;
+  height: 20px;
+  border-radius: 4px;
+  border: 2px solid #1976d2;
+}
+
+.legend-color.risk-high {
+  background: #ef5350;
+}
+
+.legend-color.risk-medium {
+  background: #ff9800;
+}
+
+.legend-color.risk-low {
+  background: #66bb6a;
+}
+
+/* Instructions */
+.map-instructions {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 12px 20px;
+  margin-top: 15px;
+  color: white;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.map-instructions p {
+  margin: 0;
+  font-size: 13px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .rizal-map-wrapper {
+    padding: 20px 15px;
+  }
+
+  .map-header h2 {
+    font-size: 22px;
+  }
+
+  .municipality-label {
+    font-size: 14px;
+  }
+
+  .municipality-cases {
+    font-size: 12px;
+  }
+
+  .municipality-barangays {
+    font-size: 10px;
+  }
+
+  .legend-items {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+/* Animation for initial load */
+@keyframes mapFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.rizal-svg-map {
+  animation: mapFadeIn 0.5s ease;
+}
+
+/* Pulse animation for high risk areas */
+@keyframes pulseHighRisk {
+  0%, 100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+
+.municipality-area.risk-high {
+  animation: pulseHighRisk 2s ease-in-out infinite;
+}

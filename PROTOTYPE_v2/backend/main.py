@@ -39,52 +39,49 @@ app.add_middleware(
 # FEATURE ENGINEERING FOR MUNICIPALITIES
 # ==============================================
 
-# ❌ DEPRECATED: Seasonal regressors removed from model training
-# These functions are kept for component extraction from OLD models only
-# New models use ONLY vaccination regressors for ANTIPOLO
-
-# def add_cainta_seasonal_features(df):
-#     """Add CAINTA-specific seasonal patterns"""
-#     df = df.copy()
-#     
-#     # MAY PEAK: May is consistently highest across all years
-#     df['may_peak'] = (df['ds'].dt.month == 5).astype(int)
-#     
-#     # LOW SEASON: Jan-Feb-March-April consistently lowest
-#     df['low_season'] = ((df['ds'].dt.month >= 1) & (df['ds'].dt.month <= 4)).astype(int)
-#     
-#     # SPRING RAMP-UP: March-April-May increasing pattern
-#     df['spring_ramp'] = ((df['ds'].dt.month >= 3) & (df['ds'].dt.month <= 5)).astype(int)
-#     
-#     # HOLIDAY EFFECT: January specifically (New Year impact)
-#     df['january_holiday'] = (df['ds'].dt.month == 1).astype(int)
-#     
-#     # POST-MAY DECLINE: June onwards typically lower than May
-#     df['post_may_decline'] = ((df['ds'].dt.month >= 6) & (df['ds'].dt.month <= 12)).astype(int)
-#     
-#     return df
+# Seasonal regressors for CAINTA and ANGONO (used in PDF reports and old models)
+def add_cainta_seasonal_features(df):
+    """Add CAINTA-specific seasonal patterns"""
+    df = df.copy()
+    
+    # MAY PEAK: May is consistently highest across all years
+    df['may_peak'] = (df['ds'].dt.month == 5).astype(int)
+    
+    # LOW SEASON: Jan-Feb-March-April consistently lowest
+    df['low_season'] = ((df['ds'].dt.month >= 1) & (df['ds'].dt.month <= 4)).astype(int)
+    
+    # SPRING RAMP-UP: March-April-May increasing pattern
+    df['spring_ramp'] = ((df['ds'].dt.month >= 3) & (df['ds'].dt.month <= 5)).astype(int)
+    
+    # HOLIDAY EFFECT: January specifically (New Year impact)
+    df['january_holiday'] = (df['ds'].dt.month == 1).astype(int)
+    
+    # POST-MAY DECLINE: June onwards typically lower than May
+    df['post_may_decline'] = ((df['ds'].dt.month >= 6) & (df['ds'].dt.month <= 12)).astype(int)
+    
+    return df
 
 
-# def add_angono_seasonal_features(df):
-#     """Add ANGONO-specific seasonal patterns as binary features"""
-#     df = df.copy()
-#     
-#     # HIGH SEASON: April-May-June (consistently high across 2022-2025)
-#     df['high_season'] = df['ds'].dt.month.isin([4, 5, 6]).astype(int)
-#     
-#     # JULY DIP: Always drops after high season
-#     df['july_dip'] = (df['ds'].dt.month == 7).astype(int)
-#     
-#     # AUGUST RISE: Increases again after July dip
-#     df['august_rise'] = (df['ds'].dt.month == 8).astype(int)
-#     
-#     # LOW SEASON: December-January (consistently lowest)
-#     df['low_season'] = df['ds'].dt.month.isin([12, 1]).astype(int)
-#     
-#     # POST-APRIL 2024 REGIME: Higher volatility period
-#     df['post_april_2024'] = (df['ds'] >= pd.Timestamp('2024-04-01')).astype(int)
-#     
-#     return df
+def add_angono_seasonal_features(df):
+    """Add ANGONO-specific seasonal patterns as binary features"""
+    df = df.copy()
+    
+    # HIGH SEASON: April-May-June (consistently high across 2022-2025)
+    df['high_season'] = df['ds'].dt.month.isin([4, 5, 6]).astype(int)
+    
+    # JULY DIP: Always drops after high season
+    df['july_dip'] = (df['ds'].dt.month == 7).astype(int)
+    
+    # AUGUST RISE: Increases again after July dip
+    df['august_rise'] = (df['ds'].dt.month == 8).astype(int)
+    
+    # LOW SEASON: December-January (consistently lowest)
+    df['low_season'] = df['ds'].dt.month.isin([12, 1]).astype(int)
+    
+    # POST-APRIL 2024 REGIME: Higher volatility period
+    df['post_april_2024'] = (df['ds'] >= pd.Timestamp('2024-04-01')).astype(int)
+    
+    return df
 
 
 def add_antipolo_vaccination_campaigns(df):
@@ -662,9 +659,26 @@ MODEL_DIR = "../../saved_models_v2/Latest_FINALIZED_barangay_models_20251228_000
 # MODEL_DIR = "../../saved_models_v2/Latest_FINALIZED_barangay_models_20251207_142420"
 # MODEL_DIR = "../../saved_models_v2/AFINALIZED_barangay_models_20251103_002104"
 
+# FPM Model for Weather-Rabies Pattern Analysis
+FPM_MODEL_PATH = "rabies_weather_fpm_model.pkl"
+
+# Weather data CSV path for FPM analysis
+WEATHER_DATA_PATH = "../../CORRECT_rabies_weather_merged_V2_withmuncode.csv"
+
+# Initialize MODELS as empty dict (required for caching check)
+MODELS = {}
+FPM_MODEL = None
+WEATHER_DF = None  # Global cache for weather data
 
 def load_all_models():
-    """Load all barangay models."""
+    """Load all barangay models with caching."""
+    global MODELS
+    
+    # Check if models already loaded (prevents duplicate loading)
+    if MODELS:
+        print("✅ Models already in memory, skipping reload...")
+        return MODELS
+    
     models = {}
     
     if not os.path.exists(MODEL_DIR):
@@ -702,6 +716,455 @@ def load_all_models():
 
 # Load models on startup
 MODELS = load_all_models()
+
+# Load FPM model
+def load_fpm_model():
+    """Load Frequent Pattern Mining model for weather-rabies insights."""
+    global FPM_MODEL
+    
+    if FPM_MODEL:
+        return FPM_MODEL
+    
+    try:
+        if os.path.exists(FPM_MODEL_PATH):
+            with open(FPM_MODEL_PATH, 'rb') as f:
+                FPM_MODEL = pickle.load(f)
+            print(f"✅ Loaded FPM model: {FPM_MODEL['summary']['rabies_related_rules']} weather-rabies rules\n")
+            return FPM_MODEL
+        else:
+            print(f"⚠️ FPM model not found: {FPM_MODEL_PATH}")
+            return None
+    except Exception as e:
+        print(f"❌ Failed to load FPM model: {e}")
+        return None
+
+FPM_MODEL = load_fpm_model()
+
+# Load weather data for FPM analysis
+def load_weather_data():
+    """Load weather data CSV with caching."""
+    global WEATHER_DF
+    
+    print(f"🔍 load_weather_data() called...")
+    
+    if WEATHER_DF is not None:
+        print(f"   ✓ Already cached: {len(WEATHER_DF)} records")
+        return WEATHER_DF
+    
+    try:
+        print(f"   Checking path: {WEATHER_DATA_PATH}")
+        if os.path.exists(WEATHER_DATA_PATH):
+            print(f"   ✓ File exists! Loading CSV...")
+            df = pd.read_csv(WEATHER_DATA_PATH)
+            
+            # Parse dates
+            df['DATE'] = pd.to_datetime(df['DATE'], format='%m/%d/%Y', errors='coerce')
+            df = df[df['DATE'].notna()].copy()
+            
+            # Create total column (same as training notebook)
+            print(f"   ✓ Creating RAB_ANIMBITE_TOTAL column...")
+            df['RAB_ANIMBITE_TOTAL'] = df['RAB_ANIMBITE_M'] + df['RAB_ANIMBITE_F']
+            
+            # Aggregate to monthly level (sum cases, mean weather)
+            print(f"   ✓ Aggregating to monthly level...")
+            df_monthly = df.groupby(['MUN_CODE', 'BGY_CODE', pd.Grouper(key='DATE', freq='MS')]).agg({
+                'tmean_c': 'mean',
+                'rh_pct': 'mean',
+                'precip_mm': 'sum',
+                'wind_speed_10m_max_kmh': 'max',
+                'sunshine_hours': 'sum',
+                'RAB_ANIMBITE_TOTAL': 'sum'
+            }).reset_index()
+            
+            WEATHER_DF = df_monthly
+            print(f"✓ Loaded {len(df_monthly)} monthly weather records")
+            return df_monthly
+        else:
+            print(f"⚠️ Weather data file not found: {WEATHER_DATA_PATH}")
+            return None
+    except Exception as e:
+        print(f"❌ Failed to load weather data: {e}")
+        return None
+
+print("\n" + "="*60)
+print("📊 LOADING WEATHER DATA FOR TIMELINE...")
+print("="*60)
+WEATHER_DF = load_weather_data()
+if WEATHER_DF is not None:
+    print(f"✅ Weather data loaded successfully: {len(WEATHER_DF)} records")
+else:
+    print(f"❌ Weather data failed to load! Check path: {WEATHER_DATA_PATH}")
+print("="*60 + "\n")
+
+# ==============================================
+# WEATHER-RABIES PATTERN ANALYSIS (FPM)
+# ==============================================
+
+def categorize_weather_for_fpm(weather_data, fpm_model):
+    """
+    Categorize weather data using FPM thresholds.
+    
+    Args:
+        weather_data: Dict with keys: tmean_c, rh_pct, precip_mm, wind_speed_10m_max_kmh, sunshine_hours
+        fpm_model: Loaded FPM model with thresholds
+    
+    Returns:
+        Dict with categorized weather conditions
+    """
+    if not fpm_model:
+        return None
+    
+    try:
+        # Get thresholds from model
+        thresholds = fpm_model['thresholds']
+        
+        # Categorize temperature
+        temp = pd.cut([weather_data.get('tmean_c', 27)], 
+                      bins=thresholds['temperature']['bins'],
+                      labels=thresholds['temperature']['labels'])[0]
+        
+        # Categorize humidity
+        humidity = pd.cut([weather_data.get('rh_pct', 80)], 
+                         bins=thresholds['humidity']['bins'],
+                         labels=thresholds['humidity']['labels'])[0]
+        
+        # Categorize precipitation
+        precip = pd.cut([weather_data.get('precip_mm', 200)], 
+                       bins=thresholds['precipitation']['bins'],
+                       labels=thresholds['precipitation']['labels'])[0]
+        
+        # Categorize wind speed
+        wind = pd.cut([weather_data.get('wind_speed_10m_max_kmh', 12)], 
+                     bins=thresholds['wind']['bins'],
+                     labels=thresholds['wind']['labels'])[0]
+        
+        # Categorize sunshine
+        sunshine = pd.cut([weather_data.get('sunshine_hours', 150)], 
+                         bins=thresholds['sunshine']['bins'],
+                         labels=thresholds['sunshine']['labels'])[0]
+        
+        return {
+            'temperature': str(temp),
+            'humidity': str(humidity),
+            'precipitation': str(precip),
+            'wind': str(wind),
+            'sunshine': str(sunshine),
+            'pattern_string': f"Humidity: {humidity}, Wind: {wind}, Rain: {precip}"
+        }
+    except Exception as e:
+        print(f"❌ Weather categorization error: {e}")
+        return None
+
+
+def get_weather_insights(weather_data, fpm_model):
+    """
+    Get weather-rabies pattern insights using FPM model.
+    
+    Args:
+        weather_data: Dict with weather measurements
+        fpm_model: Loaded FPM model
+    
+    Returns:
+        Dict with risk level, matched patterns, and recommendations
+    """
+    if not fpm_model:
+        return {'available': False, 'message': 'FPM model not loaded'}
+    
+    try:
+        # Categorize weather
+        categorized = categorize_weather_for_fpm(weather_data, fpm_model)
+        if not categorized:
+            return {'available': False, 'message': 'Failed to categorize weather'}
+        
+        # Check against top patterns
+        top_high_risk = fpm_model['top_high_risk_pattern']
+        top_low_risk = fpm_model['top_low_risk_pattern']
+        
+        # Simple pattern matching (can be enhanced)
+        pattern_str = categorized['pattern_string']
+        
+        # Check if matches high-risk pattern
+        high_risk_match = False
+        if 'Very_High_Humidity' in pattern_str and 'Calm' in pattern_str and 'Wet_Month' in pattern_str:
+            high_risk_match = True
+        
+        # Check if matches low-risk pattern  
+        low_risk_match = False
+        if 'Low_Humidity' in pattern_str and 'Breezy' in pattern_str and 'Dry_Month' in pattern_str:
+            low_risk_match = True
+        
+        # Determine risk level with detailed explanations
+        if high_risk_match:
+            risk_level = 'HIGH'
+            risk_color = '#d32f2f'
+            confidence = top_high_risk['confidence']
+            matched_pattern = top_high_risk
+            recommendations = [
+                'Send SMS alerts to health workers',
+                'Stock up on PEP vaccines (expect higher cases)',
+                'Deploy additional vaccination teams',
+                'Launch public awareness campaigns',
+                'Switch to daily case monitoring'
+            ]
+            risk_factors = [
+                '🔴 Very high humidity (>85%) creates favorable conditions for animal behavior changes',
+                '🔴 Calm winds (<15 km/h) reduce dispersion of animal scents, increasing animal encounters',
+                '🔴 Wet months (>300mm rain) drive animals to seek shelter near human settlements',
+                '🔴 Combination of these 3 factors shows 3.44× stronger association with rabies cases',
+                '🔴 Historical data: This pattern occurred in 22% of high-case months'
+            ]
+            why_this_risk = (
+                "Your current weather conditions match the **TOP HIGH-RISK PATTERN** identified "
+                "from 1,627 monthly records across 32 barangays. This specific combination "
+                "(Very High Humidity + Calm Winds + Heavy Rain) has historically been associated "
+                "with significantly higher rabies cases."
+            )
+        elif low_risk_match:
+            risk_level = 'LOW'
+            risk_color = '#388e3c'
+            confidence = top_low_risk['confidence']
+            matched_pattern = top_low_risk
+            recommendations = [
+                'Continue routine surveillance',
+                'Schedule community vaccination drives',
+                'Reallocate resources to high-risk areas',
+                'Maintain weekly monitoring'
+            ]
+            risk_factors = [
+                '🟢 Low humidity (<70%) reduces animal stress and aggressive behavior',
+                '🟢 Breezy winds (15-25 km/h) improve air circulation and reduce animal encounters',
+                '🟢 Dry months (<100mm rain) mean animals stay in natural habitats',
+                '🟢 This pattern shows 4.09× stronger association with LOW/NO rabies cases',
+                '🟢 Historical data: This pattern occurred in 19.4% of low-case months'
+            ]
+            why_this_risk = (
+                "Your current weather conditions match the **TOP LOW-RISK PATTERN** identified "
+                "from historical data. This specific combination has consistently been associated "
+                "with fewer rabies cases across multiple barangays and years."
+            )
+        else:
+            risk_level = 'MEDIUM'
+            risk_color = '#f57c00'
+            confidence = 0.15  # Default medium confidence
+            matched_pattern = None
+            recommendations = [
+                'Monitor weather trends closely',
+                'Maintain standard vaccination schedule',
+                'Prepare contingency plans'
+            ]
+            risk_factors = [
+                f'🟡 Humidity level ({categorized["humidity"]}) is in the moderate range',
+                f'🟡 Wind conditions ({categorized["wind"]}) not strongly predictive',
+                f'🟡 Rainfall ({categorized["precipitation"]}) shows mixed patterns',
+                '🟡 No exact match to high-risk or low-risk patterns',
+                '🟡 Proceed with standard prevention protocols while monitoring trends'
+            ]
+            why_this_risk = (
+                "Your current weather conditions do NOT match any strong high-risk or low-risk patterns "
+                "from the FPM analysis. This suggests **moderate risk** - not alarming, but worth monitoring. "
+                "The weather factors present don't have strong historical associations with extreme rabies cases."
+            )
+        
+        # Build detailed rule explanations
+        rule_explanations = {
+            'high_risk_threshold': {
+                'humidity': '> 85% (Very High Humidity)',
+                'wind': '< 15 km/h (Calm)',
+                'rainfall': '> 300mm (Wet Month)',
+                'temperature': '25-30°C (Warm)',
+                'pattern': 'Very_High_Humidity + Calm + Wet_Month → VERY HIGH RABIES CASES'
+            },
+            'low_risk_threshold': {
+                'humidity': '< 70% (Low Humidity)',
+                'wind': '15-25 km/h (Breezy)',
+                'rainfall': '< 100mm (Dry Month)',
+                'temperature': 'Any (not a strong factor)',
+                'pattern': 'Low_Humidity + Breezy + Dry_Month → LOW/NO RABIES CASES'
+            },
+            'why_weather_matters': [
+                '🌧️ Heavy rainfall forces stray animals to seek shelter near homes',
+                '💧 High humidity increases animal stress and aggression',
+                '💨 Calm winds concentrate animal scents, attracting more animals to areas',
+                '🌡️ Moderate temperatures (25-30°C) keep animals more active',
+                '🐕 Combined factors increase human-animal encounters'
+            ]
+        }
+        
+        return {
+            'available': True,
+            'risk_level': risk_level,
+            'risk_color': risk_color,
+            'confidence': round(confidence, 3),
+            'weather_conditions': categorized,
+            'matched_pattern': {
+                'conditions': matched_pattern['conditions'] if matched_pattern else 'No exact match',
+                'confidence': round(matched_pattern['confidence'], 3) if matched_pattern else confidence,
+                'lift': round(matched_pattern['lift'], 2) if matched_pattern else 1.0
+            } if matched_pattern else None,
+            'recommendations': recommendations,
+            'risk_factors': risk_factors,  # NEW: Detailed risk factors
+            'why_this_risk': why_this_risk,  # NEW: Explanation
+            'rule_explanations': rule_explanations,  # NEW: Threshold details
+            'model_info': {
+                'total_rules': fpm_model['summary'].get('rabies_related_rules', 0),
+                'high_risk_rules': fpm_model['summary'].get('high_risk_rules', 0),
+                'low_risk_rules': fpm_model['summary'].get('low_risk_rules', 0),
+                'strongest_lift': fpm_model['summary'].get('strongest_lift', 0.0),
+                'data_source': '1,627 monthly records (2022-2025)',
+                'barangays_analyzed': '32 barangays (Rizal Province)'
+            }
+        }
+    except Exception as e:
+        print(f"❌ Weather insights error: {e}")
+        import traceback
+        traceback.print_exc()
+        return {'available': False, 'message': f'Error: {str(e)}'}
+
+
+def analyze_monthly_weather_patterns(model_data, fpm_model, weather_df):
+    """
+    Analyze historical validation months with FPM to explain model performance.
+    
+    Returns timeline of:
+    - Month date
+    - Actual cases
+    - Predicted cases  
+    - Weather conditions (raw + categorized)
+    - FPM risk assessment
+    - Interpretation text
+    """
+    if not fpm_model or weather_df is None:
+        return []
+    
+    try:
+        # Get validation data from model
+        validation_dates = model_data.get('dates', [])
+        validation_actuals = model_data.get('actuals', [])
+        validation_predictions = model_data.get('predictions', [])
+        
+        # Check if validation data exists (handle both lists and arrays)
+        if validation_dates is None or len(validation_dates) == 0:
+            return []
+        
+        # Get municipality and barangay codes
+        municipality = model_data.get('municipality', '')
+        barangay_name = model_data.get('barangay', '')
+        
+        # Find MUN_CODE and BGY_CODE
+        # TODO: Need a mapping - for now try to match from weather data
+        # This is a simplified approach - you may need proper code mapping
+        
+        timeline = []
+        
+        for i in range(len(validation_dates)):
+            try:
+                month_date = pd.Timestamp(validation_dates[i])
+                actual_cases = validation_actuals[i]
+                predicted_cases = validation_predictions[i]
+                
+                # Find weather data for this month (try to match by date)
+                # Since we don't have exact MUN_CODE/BGY_CODE match, we'll use aggregated regional weather
+                weather_month = weather_df[weather_df['DATE'] == month_date]
+                
+                if len(weather_month) == 0:
+                    # No weather data for this month, skip
+                    continue
+                
+                # Use mean weather across all barangays for this month (approximation)
+                weather_data = {
+                    'tmean_c': weather_month['tmean_c'].mean(),
+                    'rh_pct': weather_month['rh_pct'].mean(),
+                    'precip_mm': weather_month['precip_mm'].mean(),
+                    'wind_speed_10m_max_kmh': weather_month['wind_speed_10m_max_kmh'].mean(),
+                    'sunshine_hours': weather_month['sunshine_hours'].mean()
+                }
+                
+                # Categorize weather using FPM
+                categorized = categorize_weather_for_fpm(weather_data, fpm_model)
+                if not categorized:
+                    continue
+                
+                # Determine FPM risk level (simplified pattern matching)
+                pattern_str = categorized['pattern_string']
+                fpm_risk = 'MEDIUM'
+                fpm_confidence = 0.15
+                fpm_lift = 1.0
+                
+                # Check high-risk pattern
+                if 'Very_High_Humidity' in pattern_str and 'Calm' in pattern_str and 'Wet_Month' in pattern_str:
+                    fpm_risk = 'HIGH'
+                    fpm_confidence = 0.22
+                    fpm_lift = 3.44
+                elif 'Low_Humidity' in pattern_str and 'Breezy' in pattern_str and 'Dry_Month' in pattern_str:
+                    fpm_risk = 'LOW'
+                    fpm_confidence = 0.194
+                    fpm_lift = 4.09
+                
+                # Calculate prediction error
+                error = predicted_cases - actual_cases
+                error_pct = (error / max(actual_cases, 1)) * 100
+                
+                # Generate interpretation
+                if fpm_risk == 'HIGH':
+                    if actual_cases > predicted_cases:
+                        interpretation = f"🔴 FPM correctly identified HIGH RISK weather (Lift={fpm_lift}×). Model UNDERPREDICTED by {abs(error):.0f} cases ({abs(error_pct):.1f}%) likely because extreme weather conditions exceeded training patterns."
+                    elif actual_cases < predicted_cases:
+                        interpretation = f"🟠 FPM identified HIGH RISK weather, but cases were LOWER than predicted. Model OVERPREDICTED by {abs(error):.0f} cases ({abs(error_pct):.1f}%), possibly due to effective interventions during risky weather."
+                    else:
+                        interpretation = f"✅ FPM correctly identified HIGH RISK weather. Model prediction closely matched actual cases, accounting for weather-driven increase."
+                elif fpm_risk == 'LOW':
+                    if actual_cases < predicted_cases:
+                        interpretation = f"🟢 FPM correctly identified LOW RISK weather (Lift={fpm_lift}×). Model OVERPREDICTED by {abs(error):.0f} cases ({abs(error_pct):.1f}%) because favorable weather reduced cases below seasonal trend."
+                    elif actual_cases > predicted_cases:
+                        interpretation = f"⚠️ FPM identified LOW RISK weather, but cases were HIGHER than predicted. Model UNDERPREDICTED by {abs(error):.0f} cases ({abs(error_pct):.1f}%), suggesting non-weather factors drove cases."
+                    else:
+                        interpretation = f"✅ FPM correctly identified LOW RISK weather. Model prediction aligned well with actual cases."
+                else:
+                    if abs(error_pct) < 20:
+                        interpretation = f"🟡 MEDIUM RISK weather (no strong FPM pattern). Model prediction was accurate (error: {error:.0f} cases, {abs(error_pct):.1f}%)."
+                    elif actual_cases > predicted_cases:
+                        interpretation = f"🟡 MEDIUM RISK weather. Model UNDERPREDICTED by {abs(error):.0f} cases ({abs(error_pct):.1f}%). Other factors beyond weather may have driven increase."
+                    else:
+                        interpretation = f"🟡 MEDIUM RISK weather. Model OVERPREDICTED by {abs(error):.0f} cases ({abs(error_pct):.1f}%). Actual cases lower than expected."
+                
+                timeline.append({
+                    'date': month_date.strftime('%Y-%m'),
+                    'date_display': month_date.strftime('%B %Y'),
+                    'actual_cases': int(actual_cases),
+                    'predicted_cases': int(predicted_cases),
+                    'error': int(error),
+                    'error_pct': round(error_pct, 1),
+                    'weather': {
+                        'temperature': round(weather_data['tmean_c'], 1),
+                        'humidity': round(weather_data['rh_pct'], 1),
+                        'precipitation': round(weather_data['precip_mm'], 0),
+                        'wind_speed': round(weather_data['wind_speed_10m_max_kmh'], 1),
+                        'sunshine': round(weather_data['sunshine_hours'], 0)
+                    },
+                    'weather_categories': {
+                        'temperature': categorized['temperature'],
+                        'humidity': categorized['humidity'],
+                        'precipitation': categorized['precipitation'],
+                        'wind': categorized['wind'],
+                        'sunshine': categorized['sunshine']
+                    },
+                    'fpm_risk': fpm_risk,
+                    'fpm_confidence': round(fpm_confidence, 3),
+                    'fpm_lift': round(fpm_lift, 2),
+                    'interpretation': interpretation
+                })
+                
+            except Exception as e:
+                print(f"⚠️ Error analyzing month {i}: {e}")
+                continue
+        
+        return timeline
+        
+    except Exception as e:
+        print(f"❌ Monthly weather pattern analysis error: {e}")
+        import traceback
+        traceback.print_exc()
+        return []
 
 # ==============================================
 # API ENDPOINTS
@@ -778,7 +1241,6 @@ async def get_municipalities():
         
         if mun not in summaries:
             summaries[mun] = {
-                'municipality': mun,
                 'barangays': [],
                 'total_barangays': 0,
                 'avg_mae': [],
@@ -827,6 +1289,335 @@ async def get_municipalities():
         })
     
     print(f"✅ Risk levels calculated for {len(MODELS)} barangays\n")
+    return {"success": True, "municipalities": result}
+
+
+@app.get("/api/weather-insights/{municipality}/{barangay}")
+async def get_weather_insights_endpoint(municipality: str, barangay: str):
+    """
+    Get weather-rabies pattern insights using FPM model.
+    
+    ⚠️ IMPORTANT: This analyzes MONTHLY weather patterns, not daily!
+    - FPM trained on MONTHLY aggregates (1,627 barangay-months)
+    - Weather inputs should be MONTHLY values:
+      * Temperature/Humidity: Monthly averages
+      * Precipitation/Sunshine: Monthly totals
+      * Wind: Monthly maximum
+    - Risk assessment is for THE ENTIRE MONTH
+    
+    This is a SEPARATE analysis from the forecasting model.
+    Since adding weather as regressors hurt forecast accuracy,
+    we use FPM to understand weather-rabies associations independently.
+    """
+    if not FPM_MODEL:
+        return {
+            'success': False,
+            'message': 'FPM model not available',
+            'insights': {'available': False}
+        }
+    
+    # For now, use typical MONTHLY weather values for the region
+    # In production, you'd fetch weather FORECASTS for next month or
+    # current month's accumulated values from weather API
+    # ⚠️ NOTE: These are TYPICAL MONTHLY VALUES (not real-time/daily)!
+    typical_weather = {
+        'tmean_c': 27.5,          # Monthly average temperature
+        'rh_pct': 85.0,           # Monthly average humidity
+        'precip_mm': 350,         # MONTHLY TOTAL precipitation
+        'wind_speed_10m_max_kmh': 12.0,   # Monthly maximum wind speed
+        'sunshine_hours': 150     # MONTHLY TOTAL sunshine hours
+    }
+    
+    insights = get_weather_insights(typical_weather, FPM_MODEL)
+    
+    return {
+        'success': True,
+        'municipality': municipality,
+        'barangay': barangay,
+        'weather_data': typical_weather,
+        'insights': insights,
+        'note': '⚠️ IMPORTANT: Weather values shown are TYPICAL MONTHLY AGGREGATES for the region (Precip & Sunshine = monthly totals, Temp & Humidity = monthly averages, Wind = monthly max). This is NOT real-time data. Risk assessment is for the ENTIRE MONTH. For production, integrate monthly weather forecast API (e.g., OpenWeatherMap, PAGASA).'
+    }
+
+
+@app.get("/api/barangay/{municipality}/{barangay}")
+async def get_barangay_details(municipality: str, barangay: str):
+    """Get detailed data for specific barangay."""
+    key = f"{municipality}_{barangay}"
+    
+    if key not in MODELS:
+        raise HTTPException(status_code=404, detail=f"Barangay not found: {key}")
+    
+    model_data = MODELS[key]
+    
+    # Helper function to convert numpy to Python types
+    def to_python_type(value):
+        if hasattr(value, 'item'):  # numpy type
+            return value.item()
+        return value
+    
+    # Extract metrics with proper type conversion
+    # Try different metric key variations
+    print(f"\n🔍 DEBUG: Looking for metrics in model_data keys: {list(model_data.keys())}")
+    
+    # The model uses 'hybrid_mae' and 'hybrid_mase'
+    metrics = {
+        'mae': round(float(to_python_type(
+            model_data.get('hybrid_mae', model_data.get('val_mae', model_data.get('mae', 0)))
+        )), 2),
+        'rmse': round(float(to_python_type(
+            model_data.get('hybrid_rmse', model_data.get('val_rmse', model_data.get('rmse', 0)))
+        )), 2),
+        'mape': round(float(to_python_type(
+            model_data.get('hybrid_mape', model_data.get('val_mape', model_data.get('mape', 0)))
+        )), 2),
+        'r2': round(float(to_python_type(
+            model_data.get('hybrid_r2', model_data.get('val_r2', model_data.get('r2', 0)))
+        )), 3),
+        'mase': round(float(to_python_type(
+            model_data.get('hybrid_mase', model_data.get('val_mase', model_data.get('mase', 0)))
+        )), 3)
+    }
+    
+    print(f"📊 Extracted metrics: {metrics}")
+    
+    # Extract training data
+    train_data = []
+    if 'train_dates' in model_data:
+        for i in range(len(model_data['train_dates'])):
+            train_data.append({
+                'date': pd.Timestamp(model_data['train_dates'][i]).strftime('%Y-%m'),
+                'actual': float(to_python_type(model_data['train_actuals'][i])),
+                'predicted': float(to_python_type(model_data['train_predictions'][i]))
+            })
+    
+    print(f"📈 Training data points: {len(train_data)}")
+    if train_data:
+        print(f"   Sample: {train_data[0]}")
+    
+    # Extract validation data
+    val_data = []
+    if 'dates' in model_data:
+        for i in range(len(model_data['dates'])):
+            val_data.append({
+                'date': pd.Timestamp(model_data['dates'][i]).strftime('%Y-%m'),
+                'actual': float(to_python_type(model_data['actuals'][i])),
+                'predicted': float(to_python_type(model_data['predictions'][i]))
+            })
+    
+    print(f"📉 Validation data points: {len(val_data)}")
+    if val_data:
+        print(f"   Sample: {val_data[0]}")
+    
+    # Get next month prediction
+    next_pred = predict_next_month(model_data)
+    
+    response = {
+        'success': True,
+        'barangay': {
+            'municipality': str(model_data['municipality']),
+            'barangay': str(model_data['barangay']),
+            'metrics': metrics,
+            'training_data': train_data,
+            'validation_data': val_data,
+            'next_month_prediction': round(float(to_python_type(next_pred)), 1) if next_pred else None,
+            'has_chart_data': len(train_data) > 0 or len(val_data) > 0
+        }
+    }
+    
+    print(f"✅ Returning response with chart data: {response['barangay']['has_chart_data']}\n")
+    return response
+
+
+@app.get("/api/forecast/{municipality}/{barangay}")
+async def get_future_forecast(municipality: str, barangay: str, months: int = 8):
+    """
+    Get future forecasts for a specific barangay.
+    Predicts up to 'months' months into the future (default: 8 months for safer approach).
+    """
+    key = f"{municipality}_{barangay}"
+    
+    if key not in MODELS:
+        raise HTTPException(status_code=404, detail=f"Barangay not found: {key}")
+    
+    model_data = MODELS[key]
+    
+    # Validate months parameter
+    if months < 1 or months > 24:
+        raise HTTPException(status_code=400, detail="Months must be between 1 and 24")
+    
+    # Get future predictions
+    future_predictions = predict_future_months(model_data, months_ahead=months)
+    
+    if not future_predictions:
+        raise HTTPException(status_code=500, detail="Failed to generate predictions")
+    
+    # Get validation end date for context
+    validation_end = model_data.get('validation_end', model_data['training_end'])
+    
+    print(f"🔮 Generated {len(future_predictions)} future predictions for {barangay}, {municipality}")
+    
+    return {
+        'success': True,
+        'forecast': {
+            'municipality': str(model_data['municipality']),
+            'barangay': str(model_data['barangay']),
+            'validation_end': validation_end.strftime('%Y-%m'),
+            'forecast_start': future_predictions[0]['date'] if future_predictions else None,
+            'forecast_end': future_predictions[-1]['date'] if future_predictions else None,
+            'predictions': future_predictions
+        }
+    }
+
+
+@app.get("/api/interpretability/{municipality}/{barangay}")
+async def get_model_interpretability(municipality: str, barangay: str):
+    """
+    Get model interpretability data including:
+    - Trend decomposition
+    - Seasonality patterns
+    - Feature importance from XGBoost
+    - Changepoints detection
+    - Weather-Rabies pattern insights (FPM)
+    
+    This helps understand HOW the model makes predictions (not a black box!)
+    """
+    key = f"{municipality}_{barangay}"
+    
+    if key not in MODELS:
+        raise HTTPException(status_code=404, detail=f"Barangay not found: {key}")
+    
+    model_data = MODELS[key]
+    
+    print(f"🔍 Extracting interpretability components for {barangay}, {municipality}...")
+    
+    # Extract all interpretability components
+    interpretability_data = extract_model_components(model_data)
+    
+    if not interpretability_data['success']:
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Failed to extract model components: {interpretability_data.get('error', 'Unknown error')}"
+        )
+    
+    response = {
+        'success': True,
+        'interpretability': {
+            'municipality': str(model_data['municipality']),
+            'barangay': str(model_data['barangay']),
+            
+            # Time series decomposition
+            'trend': {
+                'dates': interpretability_data['components']['dates'],
+                'values': interpretability_data['components']['trend'],
+                'description': 'Long-term direction of rabies cases (upward/downward pattern)'
+            },
+            
+            'seasonality': {
+                'dates': interpretability_data['components']['dates'],
+                'values': interpretability_data['components']['yearly_seasonality'],
+                'description': 'Recurring yearly patterns (e.g., higher cases in certain months)'
+            },
+            
+            # Holiday effects (NEW!)
+            'holidays': {
+                'dates': interpretability_data['components']['dates'],
+                'values': interpretability_data['components']['holidays'],
+                'description': 'Philippine public holiday effects on rabies cases',
+                'significant_effects': interpretability_data['holiday_effects'],
+                'has_holidays': interpretability_data['has_holidays']
+            },
+            
+            # 🆕 Weather regressors
+            'weather_regressors': {
+                'data': interpretability_data['components']['weather_regressors'],
+                'description': 'Weather factors impact on rabies cases (temperature, humidity, precipitation, etc.)',
+                'columns': list(interpretability_data['components']['weather_regressors'].keys())
+            },
+            
+            # 🆕 Vaccination regressors (ANTIPOLO only)
+            'vaccination_regressors': {
+                'data': interpretability_data['components']['vaccination_regressors'],
+                'description': 'Vaccination campaign impact on rabies cases',
+                'columns': list(interpretability_data['components']['vaccination_regressors'].keys())
+            },
+            
+            # 🆕 Seasonal regressors (CAINTA/ANGONO)
+            'seasonal_regressors': {
+                'data': interpretability_data['components']['seasonal_regressors'],
+                'description': 'Custom seasonal patterns specific to this municipality',
+                'columns': list(interpretability_data['components']['seasonal_regressors'].keys())
+            },
+            
+            # Feature importance from XGBoost
+            'feature_importance': {
+                'features': interpretability_data['feature_importance'],
+                'description': 'Which factors contribute most to predictions',
+                'top_3_features': interpretability_data['feature_importance'][:3]
+            },
+            
+            # Changepoints
+            'changepoints': {
+                'points': interpretability_data['changepoints'],
+                'description': 'Dates where the trend significantly changed (e.g., policy changes, outbreaks)'
+            },
+            
+            # Model configuration info
+            'model_config': interpretability_data['model_info']
+        }
+    }
+    
+    print(f"✅ Interpretability data extracted successfully")
+    print(f"   - Trend points: {len(interpretability_data['components']['trend'])}")
+    print(f"   - Seasonality points: {len(interpretability_data['components']['yearly_seasonality'])}")
+    print(f"   - Holiday points: {len(interpretability_data['components']['holidays'])}")
+    print(f"   - Holidays configured: {interpretability_data['has_holidays']}")
+    print(f"   - Significant holiday effects: {len(interpretability_data['holiday_effects'])}")
+    print(f"   - Weather regressors: {len(interpretability_data['components']['weather_regressors'])}")
+    print(f"   - Vaccination regressors: {len(interpretability_data['components']['vaccination_regressors'])}")
+    print(f"   - Seasonal regressors: {len(interpretability_data['components']['seasonal_regressors'])}")
+    print(f"   - Feature importance: {len(interpretability_data['feature_importance'])} features")
+    print(f"   - Changepoints detected: {len(interpretability_data['changepoints'])}")
+    
+    # 🆕 ADD WEATHER-RABIES PATTERN INSIGHTS (FPM)
+    if FPM_MODEL:
+        print(f"   🌤️ Adding weather-rabies pattern insights (FPM)")
+        typical_weather = {
+            'tmean_c': 27.5,
+            'rh_pct': 85.0,
+            'precip_mm': 350,
+            'wind_speed_10m_max_kmh': 12.0,
+            'sunshine_hours': 150
+        }
+        weather_insights = get_weather_insights(typical_weather, FPM_MODEL)
+        response['interpretability']['weather_patterns'] = {
+            'description': 'Weather-rabies associations from Frequent Pattern Mining (separate from forecast model)',
+            'insights': weather_insights,
+            'note': 'This analysis is independent of the forecasting model. Weather regressors were not used in forecasting due to accuracy concerns.'
+        }
+        print(f"   - Weather insights: Risk={weather_insights.get('risk_level', 'N/A')}")
+        
+        # 🆕 ADD MONTHLY WEATHER TIMELINE (Interpretability Layer!)
+        if WEATHER_DF is not None:
+            print(f"   📅 Analyzing validation months with FPM interpretability...")
+            weather_timeline = analyze_monthly_weather_patterns(model_data, FPM_MODEL, WEATHER_DF)
+            response['interpretability']['weather_timeline'] = {
+                'description': 'Month-by-month FPM analysis showing how weather patterns explain model performance',
+                'months': weather_timeline,
+                'total_months': len(weather_timeline),
+                'explanation': 'Each month shows: actual cases, predicted cases, weather conditions, FPM risk assessment, and interpretation of how weather influenced prediction accuracy.'
+            }
+            print(f"   - Timeline months: {len(weather_timeline)}")
+        else:
+            print(f"   ⚠️ Weather data not available for timeline analysis")
+    
+    print()
+    return response
+
+
+# ==============================================
+# 📊 REPORT GENERATION ENDPOINTS
+# ==============================================
     return {"success": True, "municipalities": result}
 
 @app.get("/api/barangay/{municipality}/{barangay}")
@@ -2136,8 +2927,26 @@ async def generate_insights_pdf(municipality: str, barangay: str):
 
 if __name__ == "__main__":
     import uvicorn
+    
+    # Use environment variable to control reload (production vs development)
+    ENV = os.getenv("ENV", "development")  # Default to development
+    IS_PRODUCTION = ENV == "production"
+    
     print("🚀 Starting Rabies Forecasting Dashboard API...")
+    print(f"🔧 Environment: {ENV.upper()}")
     print(f"📊 Loaded {len(MODELS)} models")
     print("🌐 API: http://localhost:8000")
-    print("📖 Docs: http://localhost:8000/docs\n")
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    print("📖 Docs: http://localhost:8000/docs")
+    
+    if IS_PRODUCTION:
+        print("⚡ Production mode: Auto-reload DISABLED")
+        print("💡 Tip: Use 'gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app' for better performance\n")
+    else:
+        print("🔄 Development mode: Auto-reload ENABLED\n")
+    
+    uvicorn.run(
+        "main:app", 
+        host="0.0.0.0", 
+        port=8000, 
+        reload=not IS_PRODUCTION  # Only reload in development
+    )
