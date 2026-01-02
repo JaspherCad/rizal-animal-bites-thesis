@@ -1,4 +1,4 @@
-# 🦠 Rabies Forecasting System - AI Navigation Guide
+# 🦠 Animal Bites Forecasting System - AI Navigation Guide
 
 ## 📋 System Architecture (3-Tier)
 
